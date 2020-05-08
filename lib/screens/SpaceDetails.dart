@@ -17,7 +17,7 @@ class _SpaceDetailsState extends State<SpaceDetails> {
       appBar: AppBar(
         title: Text(_dateTime == null
             ? "Space ${widget.value} - Today"
-            : "Space ${widget.value} - ${_dateTime}"),
+            : "Space ${widget.value} - $_dateTime"),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.calendar_today),
