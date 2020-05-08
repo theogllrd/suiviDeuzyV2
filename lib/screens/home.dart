@@ -6,6 +6,8 @@ import 'newSpace.dart';
 class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var SpaceList = [1, 2, 3];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
@@ -30,34 +32,41 @@ class Home extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Card(
+            children: [
+              /*Card(
                 child: Text(
-                  'Bienvenue sur mon applicaBienvenue sur mon applicaBienvenue sur mon applicaBienvenue sur mon applica',
+                  'Space 1',
                   style: TextStyle(
-                    fontSize: 25,
+                    fontSize: 35,
                   ),
                 ),
                 margin: EdgeInsets.only(
                     top: 15.0, left: 15.0, bottom: 15.0, right: 15.0),
                 color: Colors.black26,
-              ),
-              RaisedButton(
-                child: Text(
-                  'clic ici',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
+                
+              ),*/
+
+              for (var number in SpaceList)
+                SizedBox(
+                  height: 100.0,
+                  width: 500.0,
+                  child: RaisedButton(
+                    child: Text(
+                      'Space $number',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30.0,
+                      ),
+                    ),
+                    color: Colors.blueGrey,
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (BuildContext context) {
+                        return SpaceDetails(value: number);
+                      }));
+                    },
                   ),
                 ),
-                color: Colors.blueGrey,
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (BuildContext context) {
-                    return SpaceDetails();
-                  }));
-                },
-              ),
             ],
           ),
         ),
