@@ -47,6 +47,18 @@ class _LoginState extends State<Login> {
                       padding: EdgeInsets.all(8.0),
                       child: RaisedButton(
                         onPressed: _submitLogin,
+                        child: Text('Sign in'),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: RaisedButton(
+                        onPressed: _submitLogin,
                         child: Text('Log in'),
                       ),
                     ),
