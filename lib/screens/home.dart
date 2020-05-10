@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:suivideuzy/database/User.dart';
 import 'package:suivideuzy/screens/SpaceDetails.dart';
 
 import 'newSpace.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
+  final User user;
+  Home({Key key, this.user}) : super(key: key);
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     var SpaceList = [1, 2, 3];
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Home of ${widget.user.email}'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.add),

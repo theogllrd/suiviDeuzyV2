@@ -11,7 +11,7 @@ class DBHelper {
   static const String ID = 'id';
   static const String EMAIL = 'email';
   static const String PASSWORD = 'password';
-  static const String TABLE = 'user';
+  //static const String TABLE = 'user';
   static const String DB_NAME = "suivideuzy";
 
   Future<Database> get db async {
@@ -31,19 +31,23 @@ class DBHelper {
 
   _onCreate(Database db, int version) async {
     await db.execute(
-        "CREATE TABLE $TABLE ($ID INTEGER PRIMARY KEY, $EMAIL TEXT, $PASSWORD TEXT");
+        "CREATE TABLE user ($ID INTEGER PRIMARY KEY, $EMAIL TEXT, $PASSWORD TEXT)");
   }
 
-  Future<User> save(User user) async {
+  Future<User> insert(String table, User user) async {
     var dbClient = await db;
-    user.id = await dbClient.insert(TABLE, user.toMap());
+    user.id = await dbClient.insert(
+      table,
+      user.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
     return user;
   }
 
   Future<List<User>> getUsers() async {
     var dbClient = await db;
     List<Map> maps =
-        await dbClient.query(TABLE, columns: [ID, EMAIL, PASSWORD]);
+        await dbClient.query('user', columns: [ID, EMAIL, PASSWORD]);
     //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
     List<User> users = [];
     if (maps.length > 0) {
@@ -54,17 +58,18 @@ class DBHelper {
     return users;
   }
 
-  Future<int> delete(int id) async {
+  Future<int> delete(String table, int id) async {
     var dbClient = await db;
-    return await dbClient.delete(TABLE, where: '$ID = ?', whereArgs: [id]);
+    return await dbClient.delete(table, where: '$ID = ?', whereArgs: [id]);
   }
 
+/*
   Future<int> update(User user) async {
     var dbClient = await db;
     return await dbClient
         .update(TABLE, user.toMap(), where: '$ID = ?', whereArgs: [user.id]);
   }
-
+*/
   Future close() async {
     var dbClient = await db;
     dbClient.close();

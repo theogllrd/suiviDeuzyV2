@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:suivideuzy/database/db_helper.dart';
+import 'dart:io';
 import 'home.dart';
+import 'package:suivideuzy/database/User.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -8,9 +10,18 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  Future<List<User>> users;
   final formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String _email, _password;
+
+  var dbHelper;
+
+  @override
+  void initState() {
+    super.initState();
+    dbHelper = DBHelper();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +57,7 @@ class _LoginState extends State<Login> {
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: RaisedButton(
-                        onPressed: _submitLogin,
+                        onPressed: _signIn,
                         child: Text('Sign in'),
                       ),
                     ),
@@ -72,28 +83,90 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void _submitLogin() {
+  _signIn() async {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
-      print(_email);
-      //print(_password);
-      if (_email == "theo" && _password == "theo") {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (BuildContext context) {
-            return Home();
-          }),
-        );
-      } else {
-        final snackBar = SnackBar(
+
+      // on get la liste des users
+      users = dbHelper.getUsers();
+      // var pour savoir si le user est deja present en bdd
+      bool exist = false;
+      // on parcours la liste des users
+      await users.then((user) {
+        for (var u in user) {
+          // si un mail dans la liste est egal au mail dans le form, on passe exist a true
+          if (u.email == _email) {
+            exist = true;
+            break;
+          }
+        }
+      });
+      // si on a trouvé le mail dans la bdd on affiche la snackbar
+      if (exist == true) {
+        var snackBar = SnackBar(
           content: Text(
-            'Wrong email / password',
+            'User already exist',
             style: TextStyle(
               fontSize: 20,
             ),
             textAlign: TextAlign.center,
           ),
-          duration: Duration(seconds: 4),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.redAccent,
+        );
+        _scaffoldKey.currentState.showSnackBar(snackBar);
+      } else {
+        // sinon on crée l'utilisateur
+        User u = User(null, _email, _password);
+        dbHelper.insert('user', u);
+        var snackBar = SnackBar(
+          content: Text(
+            'Added',
+            style: TextStyle(
+              fontSize: 20,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.greenAccent,
+        );
+        _scaffoldKey.currentState.showSnackBar(snackBar);
+      }
+    }
+  }
+
+  void _submitLogin() async {
+    if (formKey.currentState.validate()) {
+      formKey.currentState.save();
+      // je get la liste des users
+      bool found = false;
+      await users.then((user) {
+        for (var u in user) {
+          print(u.toString());
+          // si un mail dans la liste est egal au mail dans le form, on passe exist a true
+          if (u.email == _email && u.password == _password) {
+            found = true;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (BuildContext context) {
+                return Home(user: u);
+              }),
+            );
+          }
+        }
+      });
+      if (found == false) {
+        var snackBar = SnackBar(
+          content: Text(
+            'Wrong user / password',
+            style: TextStyle(
+              fontSize: 20,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.redAccent,
         );
