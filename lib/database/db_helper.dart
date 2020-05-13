@@ -11,11 +11,21 @@ class DBHelper {
   static const String ID = 'id';
   static const String EMAIL = 'email';
   static const String PASSWORD = 'password';
+  static const String NAME = 'name';
+  static const String SURNAME = 'surname';
+  /*
+  static const String IDUSER = 'idUser';
+  static const String TYPE = 'type';
+  static const String IDSPACE = 'idSpace';
+  static const String VALUE = 'value';
+  static const String IDINDICATOR = 'idIndicator';
+  static const String CREATEDDATE = 'createdDate';*/
   //static const String TABLE = 'user';
-  static const String DB_NAME = "suivideuzy";
+  static const String DB_NAME = "suivideuzyV1";
 
   Future<Database> get db async {
     if (_db != null) {
+      print('renvoie de la bdd existante');
       return _db;
     }
     _db = await initDb();
@@ -23,6 +33,7 @@ class DBHelper {
   }
 
   initDb() async {
+    print('initialisation de la base de données');
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, DB_NAME);
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
@@ -30,21 +41,32 @@ class DBHelper {
   }
 
   _onCreate(Database db, int version) async {
+    print('insertion de la table user');
     await db.execute(
-        "CREATE TABLE user ($ID INTEGER PRIMARY KEY, $EMAIL TEXT, $PASSWORD TEXT)");
+        "CREATE TABLE user ($ID INTEGER PRIMARY KEY, $EMAIL TEXT, $PASSWORD TEXT, $NAME TEXT, $SURNAME TEXT)");
+    /*print('insertion de la table space');
+    await db.execute(
+        "CREATE TABLE space ($ID INTEGER PRIMARY KEY, $NAME TEXT, $IDUSER INTEGER)");
+    print('insertion de la table indicator');
+    await db.execute(
+        "CREATE TABLE indicator ($ID INTEGER PRIMARY KEY, $NAME TEXT, $TYPE TEXT, $IDSPACE INTEGER)");
+    print('insertion de la table value');
+    await db.execute(
+        "CREATE TABLE value ($ID INTEGER PRIMARY KEY, $VALUE TEXT, $IDINDICATOR INTEGER, $CREATEDDATE TEXT)");*/
   }
 
   Future<User> insert(String table, User user) async {
+    print('insertion d\'un user en bdd');
     var dbClient = await db;
     user.id = await dbClient.insert(
       table,
       user.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
     );
     return user;
   }
 
   Future<List<User>> getUsers() async {
+    print('recuperation de la liste des users');
     var dbClient = await db;
     List<Map> maps =
         await dbClient.query('user', columns: [ID, EMAIL, PASSWORD]);
@@ -59,6 +81,7 @@ class DBHelper {
   }
 
   Future<int> delete(String table, int id) async {
+    print('suppresion d\'un utilisateur');
     var dbClient = await db;
     return await dbClient.delete(table, where: '$ID = ?', whereArgs: [id]);
   }

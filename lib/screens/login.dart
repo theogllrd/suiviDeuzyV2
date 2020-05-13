@@ -21,6 +21,7 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     dbHelper = DBHelper();
+    // ici on peut insert tout un tas de trucs dans la bdd
   }
 
   @override
@@ -83,7 +84,7 @@ class _LoginState extends State<Login> {
     );
   }
 
-  _signIn() async {
+  void _signIn() async {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
 
@@ -116,10 +117,11 @@ class _LoginState extends State<Login> {
           backgroundColor: Colors.redAccent,
         );
         _scaffoldKey.currentState.showSnackBar(snackBar);
-      } else {
+        return;
+      } else if (exist == false) {
         // sinon on crée l'utilisateur
         User u = User(null, _email, _password);
-        dbHelper.insert('user', u);
+        await dbHelper.insert('user', u);
         var snackBar = SnackBar(
           content: Text(
             'Added',
