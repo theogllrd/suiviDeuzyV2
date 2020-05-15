@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:suivideuzy/database/Space.dart';
 
 import 'User.dart';
 
@@ -13,15 +14,18 @@ class DBHelper {
   static const String PASSWORD = 'password';
   static const String NAME = 'name';
   static const String SURNAME = 'surname';
-  /*
+
   static const String IDUSER = 'idUser';
+  /*
   static const String TYPE = 'type';
   static const String IDSPACE = 'idSpace';
   static const String VALUE = 'value';
   static const String IDINDICATOR = 'idIndicator';
   static const String CREATEDDATE = 'createdDate';*/
   //static const String TABLE = 'user';
-  static const String DB_NAME = "suivideuzyV1";
+
+  // V2 = implementation des espaces
+  static const String DB_NAME = "suivideuzyV2";
 
   Future<Database> get db async {
     if (_db != null) {
@@ -44,10 +48,10 @@ class DBHelper {
     print('insertion de la table user');
     await db.execute(
         "CREATE TABLE user ($ID INTEGER PRIMARY KEY, $EMAIL TEXT, $PASSWORD TEXT, $NAME TEXT, $SURNAME TEXT)");
-    /*print('insertion de la table space');
+    print('insertion de la table space');
     await db.execute(
         "CREATE TABLE space ($ID INTEGER PRIMARY KEY, $NAME TEXT, $IDUSER INTEGER)");
-    print('insertion de la table indicator');
+    /*print('insertion de la table indicator');
     await db.execute(
         "CREATE TABLE indicator ($ID INTEGER PRIMARY KEY, $NAME TEXT, $TYPE TEXT, $IDSPACE INTEGER)");
     print('insertion de la table value');
@@ -84,6 +88,30 @@ class DBHelper {
     print('suppresion d\'un utilisateur');
     var dbClient = await db;
     return await dbClient.delete(table, where: '$ID = ?', whereArgs: [id]);
+  }
+
+  Future<Space> insertSpace(Space space) async {
+    print('insertion d\'un espace en bdd');
+    var dbClient = await db;
+    space.id = await dbClient.insert(
+      'space',
+      space.toMap(),
+    );
+    return space;
+  }
+
+  Future<List<Space>> getSpaces() async {
+    print('recuperation de la liste des espaces');
+    var dbClient = await db;
+    List<Map> maps = await dbClient.query('space', columns: [ID, NAME, IDUSER]);
+    //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
+    List<Space> spaces = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        spaces.add(Space.fromMap(maps[i]));
+      }
+    }
+    return spaces;
   }
 
 /*

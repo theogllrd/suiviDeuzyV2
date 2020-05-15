@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:suivideuzy/database/Indicator.dart';
+import 'package:suivideuzy/database/Space.dart';
+import 'package:suivideuzy/database/db_helper.dart';
 
 class newSpace extends StatefulWidget {
   @override
@@ -14,6 +16,15 @@ class _newSpaceState extends State<newSpace> {
 
   String _spaceName, _indicatorName;
   String dropdownValue = 'String';
+
+  // pour acceder a la bdd
+  var dbHelper;
+  @override
+  void initState() {
+    super.initState();
+    dbHelper = DBHelper();
+    // ici on peut insert tout un tas de trucs dans la bdd
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +67,9 @@ class _newSpaceState extends State<newSpace> {
                               icon: const Icon(Icons.delete,
                                   color: Colors.redAccent),
                               tooltip: 'Delete',
-                              onPressed: () {},
+                              onPressed: () {
+                                _deleteIndicator(_indicators[index]);
+                              },
                             )),
                       );
                     },
@@ -117,6 +130,9 @@ class _newSpaceState extends State<newSpace> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           print('je dois save l\'espace');
+          Space space = Space(null, _spaceName, 1);
+          dbHelper.insertSpace(space);
+
           // Add your onPressed code here!
         },
         child: Icon(Icons.check),
@@ -135,6 +151,13 @@ class _newSpaceState extends State<newSpace> {
     for (var indic in _indicators) {
       print(indic);
     }
+  }
+
+  _deleteIndicator(Indicator data) {
+    setState(() {
+      _indicators.removeWhere(
+          (item) => item.name == data.name && item.type == data.type);
+    });
   }
 
 /*
