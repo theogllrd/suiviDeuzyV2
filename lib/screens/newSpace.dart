@@ -129,9 +129,22 @@ class _newSpaceState extends State<newSpace> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('je dois save l\'espace');
-          Space space = Space(null, _spaceName, 1);
-          dbHelper.insertSpace(space);
+          if (_spaceName == null) {
+            return print('le spaceName est null');
+          } else {
+            print('du coup je save');
+            Space space = Space(null, _spaceName, 1);
+            Future<Space> spaceBdd = dbHelper.insertSpace(space);
+            spaceBdd.then((onValue) {
+              print('je viens de creer l\'espace id :' + onValue.id.toString());
+              _indicators.forEach((indicator) => {
+                    print('insertion dun indicator'),
+                    dbHelper.insertIndicator(Indicator(
+                        null, indicator.name, indicator.type, onValue.id))
+                  });
+            });
+            Navigator.pop(context);
+          }
 
           // Add your onPressed code here!
         },

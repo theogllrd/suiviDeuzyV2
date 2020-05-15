@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Space.dart';
+import 'package:suivideuzy/database/db_helper.dart';
+import 'package:suivideuzy/screens/home.dart';
 
 class SpaceDetails extends StatefulWidget {
   // pour recuperer le space courant depuis le home
@@ -13,14 +15,38 @@ class SpaceDetails extends StatefulWidget {
 }
 
 class _SpaceDetailsState extends State<SpaceDetails> {
+  // cle du scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   DateTime _dateTime = DateTime.now();
   bool editMode = false;
-  final List<Indicator> _indicators = new List<Indicator>.generate(
-      5, (i) => Indicator(i, 'Indicator $i', 'String', 1));
+
+  //final List<Indicator> _indicators = new List<Indicator>.generate(
+  // 5, (i) => Indicator(i, 'Indicator $i', 'String', 1));
+
+  Future<List<Indicator>> indicators;
+
+  // pour acceder a la bdd
+  var dbHelper;
+  @override
+  void initState() {
+    super.initState();
+    dbHelper = DBHelper();
+
+    indicators = dbHelper.getIndicators(widget.currentSpace.id);
+    // ici on peut insert tout un tas de trucs dans la bdd
+  }
+
+  void refreshList() {
+    setState(() {
+      indicators = dbHelper.getIndicators(widget.currentSpace.id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_dateTime == null
             ? "${widget.currentSpace.name}"
@@ -74,13 +100,23 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   }
 
   Widget _showIndicators() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: _indicators.length,
-      itemBuilder: (context, index) {
-        return _indicator(_indicators[index]);
-      },
-    );
+    return FutureBuilder<List<Indicator>>(
+        future: indicators,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) {
+                return _indicator(snapshot.data[index]);
+              },
+            );
+          }
+          if (snapshot.data == null || snapshot.data.length == 0) {
+            return Text('No data found');
+          }
+          return CircularProgressIndicator();
+        });
   }
 
   Widget _indicator(Indicator indicator) {
@@ -104,11 +140,8 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   }
 
   _deleteIndicator(Indicator data) {
-    setState(() {
-      _indicators.removeWhere(
-        (item) => item.id == data.id,
-      );
-    });
+    dbHelper.deleteIndicator(data.id);
+    refreshList();
   }
 
   _deleteSpace() {
@@ -119,7 +152,11 @@ class _SpaceDetailsState extends State<SpaceDetails> {
               content: Text('Are you sure ?'),
               actions: <Widget>[
                 FlatButton(
-                    onPressed: () => print('je dois faire le delete !!!!!!'),
+                    onPressed: () => {
+                          dbHelper.deleteSpace(widget.currentSpace.id),
+                          Navigator.pop(context), // to close the popup
+                          Navigator.pop(context), // to get back to Home()
+                        },
                     child: Text('YES')),
                 FlatButton(
                     onPressed: () => Navigator.pop(context), child: Text('NO'))

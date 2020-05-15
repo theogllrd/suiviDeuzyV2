@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Space.dart';
 
 import 'User.dart';
@@ -16,13 +17,13 @@ class DBHelper {
   static const String SURNAME = 'surname';
 
   static const String IDUSER = 'idUser';
-  /*
+
   static const String TYPE = 'type';
   static const String IDSPACE = 'idSpace';
+  /*
   static const String VALUE = 'value';
   static const String IDINDICATOR = 'idIndicator';
   static const String CREATEDDATE = 'createdDate';*/
-  //static const String TABLE = 'user';
 
   // V2 = implementation des espaces
   static const String DB_NAME = "suivideuzyV2";
@@ -51,9 +52,10 @@ class DBHelper {
     print('insertion de la table space');
     await db.execute(
         "CREATE TABLE space ($ID INTEGER PRIMARY KEY, $NAME TEXT, $IDUSER INTEGER)");
-    /*print('insertion de la table indicator');
+    print('insertion de la table indicator');
     await db.execute(
         "CREATE TABLE indicator ($ID INTEGER PRIMARY KEY, $NAME TEXT, $TYPE TEXT, $IDSPACE INTEGER)");
+    /*
     print('insertion de la table value');
     await db.execute(
         "CREATE TABLE value ($ID INTEGER PRIMARY KEY, $VALUE TEXT, $IDINDICATOR INTEGER, $CREATEDDATE TEXT)");*/
@@ -112,6 +114,46 @@ class DBHelper {
       }
     }
     return spaces;
+  }
+
+  Future<int> deleteSpace(int id) async {
+    print('suppresion d\'un space');
+    var dbClient = await db;
+    return await dbClient.delete('space', where: '$ID = ?', whereArgs: [id]);
+  }
+
+  Future<Indicator> insertIndicator(Indicator indicator) async {
+    print('insertion d\'un indicateur en bdd');
+    var dbClient = await db;
+    indicator.id = await dbClient.insert(
+      'indicator',
+      indicator.toMap(),
+    );
+    return indicator;
+  }
+
+  Future<List<Indicator>> getIndicators(int idSpace) async {
+    print('recuperation de la liste des indicators');
+    var dbClient = await db;
+    List<Map> maps = await dbClient.query('indicator',
+        columns: [ID, NAME, TYPE, IDSPACE],
+        where: '$IDSPACE = ?',
+        whereArgs: [idSpace]);
+    //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
+    List<Indicator> indicators = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        indicators.add(Indicator.fromMap(maps[i]));
+      }
+    }
+    return indicators;
+  }
+
+  Future<int> deleteIndicator(int id) async {
+    print('suppresion d\'un indicator');
+    var dbClient = await db;
+    return await dbClient
+        .delete('indicator', where: '$ID = ?', whereArgs: [id]);
   }
 
 /*

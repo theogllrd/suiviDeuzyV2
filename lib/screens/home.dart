@@ -65,6 +65,7 @@ class _HomeState extends State<Home> {
   }
 
   _showSpaces() {
+    refreshList(); // un peu degeu mais pour refresh la liste quand je supprimer un espace
     return FutureBuilder<List<Space>>(
         future: spaces,
         builder: (context, snapshot) {
