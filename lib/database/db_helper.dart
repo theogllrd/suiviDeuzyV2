@@ -156,13 +156,18 @@ class DBHelper {
         .delete('indicator', where: '$ID = ?', whereArgs: [id]);
   }
 
-/*
-  Future<int> update(User user) async {
+  Future<int> updateSpace(Space space) async {
     var dbClient = await db;
-    return await dbClient
-        .update(TABLE, user.toMap(), where: '$ID = ?', whereArgs: [user.id]);
+    return await dbClient.update('space', space.toMap(),
+        where: '$ID = ?', whereArgs: [space.id]);
   }
-*/
+
+  Future<int> updateIndicator(Indicator indicator) async {
+    var dbClient = await db;
+    return await dbClient.update('indicator', indicator.toMap(),
+        where: '$ID = ?', whereArgs: [indicator.id]);
+  }
+
   Future close() async {
     var dbClient = await db;
     dbClient.close();

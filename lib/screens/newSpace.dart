@@ -29,12 +29,108 @@ class _newSpaceState extends State<newSpace> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text(
           'Create a new Space',
         ),
       ),
-      body: Column(
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            Container(
+              height: 85,
+              width: 400,
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: controllerSpaceName,
+                    onChanged: (content) {
+                      _spaceName = controllerSpaceName.text;
+                    },
+                    obscureText: false,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Space name',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                width: 400,
+                child: Card(
+                  child: showIndicatorsList(),
+                ),
+              ),
+            ),
+            Container(
+              height: 200,
+              width: 400,
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: controllerIndicatorName,
+                        onChanged: (content) {
+                          _indicatorName = controllerIndicatorName.text;
+                        },
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Indicator Name',
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: Row(
+                        children: <Widget>[
+                          Text(
+                            'Indicator type : ',
+                          ),
+                          DropdownButton<String>(
+                            value: dropdownValue,
+                            icon: Icon(Icons.keyboard_arrow_down),
+                            iconSize: 24,
+                            elevation: 16,
+                            style: TextStyle(color: Colors.black),
+                            onChanged: (String newValue) {
+                              setState(() {
+                                dropdownValue = newValue;
+                              });
+                            },
+                            items: <String>[
+                              'String',
+                              'Integer',
+                              'Boolean',
+                              'Image'
+                            ].map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    RaisedButton(
+                      onPressed: _validateIndicator,
+                      child: Text('VALIDER INDICATEUR'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      /*Column(
         children: <Widget>[
           Card(
             child: Padding(
@@ -55,26 +151,7 @@ class _newSpaceState extends State<newSpace> {
           Card(
             child: Column(
               children: <Widget>[
-                Container(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _indicators.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                            title: Center(child: Text(_indicators[index].name)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete,
-                                  color: Colors.redAccent),
-                              tooltip: 'Delete',
-                              onPressed: () {
-                                _deleteIndicator(_indicators[index]);
-                              },
-                            )),
-                      );
-                    },
-                  ),
-                ),
+                showIndicatorsList(),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextField(
@@ -126,7 +203,7 @@ class _newSpaceState extends State<newSpace> {
             ),
           ),
         ],
-      ),
+      ),*/
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_spaceName == null) {
@@ -151,6 +228,26 @@ class _newSpaceState extends State<newSpace> {
         child: Icon(Icons.check),
         backgroundColor: Colors.green,
       ),
+    );
+  }
+
+  showIndicatorsList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: _indicators.length,
+      itemBuilder: (context, index) {
+        return Card(
+          child: ListTile(
+              title: Center(child: Text(_indicators[index].name)),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                tooltip: 'Delete',
+                onPressed: () {
+                  _deleteIndicator(_indicators[index]);
+                },
+              )),
+        );
+      },
     );
   }
 

@@ -87,7 +87,7 @@ class _HomeState extends State<Home> {
 
   Widget _space(Space space) {
     return ListTile(
-      title: Text(space.name),
+      title: Text(space != null ? space.name : 'Error loading the title'),
       onTap: () {
         Navigator.push(
           context,

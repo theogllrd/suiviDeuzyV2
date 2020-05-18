@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Space.dart';
 import 'package:suivideuzy/database/db_helper.dart';
+import 'package:suivideuzy/screens/editIndicator.dart';
 import 'package:suivideuzy/screens/home.dart';
 
 class SpaceDetails extends StatefulWidget {
@@ -17,6 +18,10 @@ class SpaceDetails extends StatefulWidget {
 class _SpaceDetailsState extends State<SpaceDetails> {
   // cle du scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  // controlleur pour quand on edit le name du space
+  final controllerSpaceName = TextEditingController();
+  String _spaceName;
 
   DateTime _dateTime = DateTime.now();
   bool editMode = false;
@@ -48,9 +53,21 @@ class _SpaceDetailsState extends State<SpaceDetails> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(_dateTime == null
-            ? "${widget.currentSpace.name}"
-            : "${widget.currentSpace.name} - $_dateTime"),
+        title: !editMode
+            ? Text(_dateTime == null
+                ? "${widget.currentSpace.name}"
+                : "${widget.currentSpace.name} - $_dateTime")
+            : TextField(
+                controller: controllerSpaceName,
+                onChanged: (content) {
+                  widget.currentSpace.name = controllerSpaceName.text;
+                },
+                obscureText: false,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: widget.currentSpace.name,
+                ),
+              ),
         actions: <Widget>[
           !editMode
               ? IconButton(
@@ -89,9 +106,9 @@ class _SpaceDetailsState extends State<SpaceDetails> {
               ? {
                   print('je passe en mode edit'),
                 }
-              : {
-                  print('je save'),
-                };
+              : dbHelper.updateSpace(Space(widget.currentSpace.id,
+                  widget.currentSpace.name, widget.currentSpace.idUser));
+          //widget.currentSpace.name = controllerSpaceName.text;
         },
         child: Icon(editMode ? Icons.check : Icons.edit),
         backgroundColor: editMode ? Colors.green : Colors.blueAccent,
@@ -123,18 +140,37 @@ class _SpaceDetailsState extends State<SpaceDetails> {
     return ListTile(
       title: Text(indicator.name),
       trailing: editMode
-          ? IconButton(
-              icon: const Icon(Icons.delete, color: Colors.redAccent),
-              tooltip: 'delete indicator',
-              onPressed: () {
-                setState(() {
-                  _deleteIndicator(indicator);
-                });
-              },
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                  tooltip: 'edit indicator',
+                  onPressed: () {
+                    setState(() {
+                      print('edit indicator');
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  tooltip: 'delete indicator',
+                  onPressed: () {
+                    setState(() {
+                      _deleteIndicator(indicator);
+                    });
+                  },
+                ),
+              ],
             )
           : null,
       onTap: () {
-        print(indicator.name + ' clicked');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => editIndicator(currentIndicator: indicator),
+          ),
+        );
       },
     );
   }
