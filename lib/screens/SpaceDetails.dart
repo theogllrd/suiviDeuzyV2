@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Space.dart';
+import 'package:suivideuzy/database/Value.dart';
 import 'package:suivideuzy/database/db_helper.dart';
 import 'package:suivideuzy/screens/editIndicator.dart';
 import 'package:suivideuzy/screens/home.dart';
+import 'package:suivideuzy/database/StructValues.dart';
 
 class SpaceDetails extends StatefulWidget {
   // pour recuperer le space courant depuis le home
@@ -30,15 +34,43 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   // 5, (i) => Indicator(i, 'Indicator $i', 'String', 1));
 
   Future<List<Indicator>> indicators;
+  List<dynamic> values = [];
 
   // pour acceder a la bdd
   var dbHelper;
   @override
   void initState() {
     super.initState();
-    dbHelper = DBHelper();
 
-    indicators = dbHelper.getIndicators(widget.currentSpace.id);
+    //values.add({"id": 1, "value": 'Coucou'});
+    //values.add({"id": 2, "value": '32'});
+    //print(values[1]["value"]);
+
+    List<Indicator> indicators2 = [];
+
+    dbHelper = DBHelper();
+    //dbHelper.insertValue(new Value(null, 'coucou', 6, 'today'));
+    //dbHelper.insertValue(new Value(null, '92', 7, 'today'));
+    //dbHelper.insertValue(new Value(null, 'false', 8, 'today'));
+
+    dbHelper
+        .getIndicators(widget.currentSpace.id)
+        .then((indicators) => indicators.forEach((indicator) => {
+              //print('id === ' + indicator.id.toString()),
+              //indicators2.add(indicator),
+              dbHelper.getValue(indicator.id).then((value) => {
+                    /*value != null
+                        ? values.add({"id": indicator.id, "value": value.value})
+                        : print("pas de value pour l'indicateur :" +
+                            indicator.name),*/
+
+                    values.add(
+                        {"id": indicator.id.toString(), "value": value.value}),
+                    //print(values),
+                  })
+            }))
+        .then(refreshList());
+    //.then(print(values));
     // ici on peut insert tout un tas de trucs dans la bdd
   }
 
@@ -138,7 +170,9 @@ class _SpaceDetailsState extends State<SpaceDetails> {
 
   Widget _indicator(Indicator indicator) {
     return ListTile(
-      title: Text(indicator.name),
+      title: Text(indicator.name +
+          '     |     ' +
+          showValueForIndicator(indicator.id).toString()),
       trailing: editMode
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -173,6 +207,15 @@ class _SpaceDetailsState extends State<SpaceDetails> {
         );
       },
     );
+  }
+
+  showValueForIndicator(int idIndicator) {
+    String phrase = "";
+    values.forEach((value) =>
+        value["id"] == idIndicator.toString() ? phrase = value["value"] : null);
+
+    phrase == null ? phrase = "Pas de données aujourd'hui" : null;
+    return phrase;
   }
 
   _deleteIndicator(Indicator data) {

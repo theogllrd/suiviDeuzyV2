@@ -144,6 +144,7 @@ class _LoginState extends State<Login> {
       formKey.currentState.save();
       // je get la liste des users
       bool found = false;
+      users = dbHelper.getUsers();
       await users.then((user) {
         for (var u in user) {
           print(u.toString());

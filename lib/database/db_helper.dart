@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Space.dart';
+import 'package:suivideuzy/database/Value.dart';
 
 import 'User.dart';
 
@@ -20,17 +21,17 @@ class DBHelper {
 
   static const String TYPE = 'type';
   static const String IDSPACE = 'idSpace';
-  /*
+
   static const String VALUE = 'value';
   static const String IDINDICATOR = 'idIndicator';
-  static const String CREATEDDATE = 'createdDate';*/
+  static const String CREATEDDATE = 'createdDate';
 
   // V2 = implementation des espaces
-  static const String DB_NAME = "suivideuzyV2";
+  static const String DB_NAME = "suivideuzyV7";
 
   Future<Database> get db async {
     if (_db != null) {
-      print('renvoie de la bdd existante');
+      //print('renvoie de la bdd existante');
       return _db;
     }
     _db = await initDb();
@@ -38,7 +39,7 @@ class DBHelper {
   }
 
   initDb() async {
-    print('initialisation de la base de données');
+    //print('initialisation de la base de données');
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, DB_NAME);
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
@@ -55,10 +56,9 @@ class DBHelper {
     print('insertion de la table indicator');
     await db.execute(
         "CREATE TABLE indicator ($ID INTEGER PRIMARY KEY, $NAME TEXT, $TYPE TEXT, $IDSPACE INTEGER)");
-    /*
     print('insertion de la table value');
     await db.execute(
-        "CREATE TABLE value ($ID INTEGER PRIMARY KEY, $VALUE TEXT, $IDINDICATOR INTEGER, $CREATEDDATE TEXT)");*/
+        "CREATE TABLE value ($ID INTEGER PRIMARY KEY, $VALUE TEXT, $IDINDICATOR INTEGER, $CREATEDDATE TEXT)");
   }
 
   Future<User> insert(String table, User user) async {
@@ -103,7 +103,7 @@ class DBHelper {
   }
 
   Future<List<Space>> getSpaces() async {
-    print('recuperation de la liste des espaces');
+    //print('recuperation de la liste des espaces');
     var dbClient = await db;
     List<Map> maps = await dbClient.query('space', columns: [ID, NAME, IDUSER]);
     //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
@@ -117,7 +117,7 @@ class DBHelper {
   }
 
   Future<int> deleteSpace(int id) async {
-    print('suppresion d\'un space');
+    //print('suppresion d\'un space');
     var dbClient = await db;
     return await dbClient.delete('space', where: '$ID = ?', whereArgs: [id]);
   }
@@ -133,7 +133,7 @@ class DBHelper {
   }
 
   Future<List<Indicator>> getIndicators(int idSpace) async {
-    print('recuperation de la liste des indicators');
+    //print('recuperation de la liste des indicators');
     var dbClient = await db;
     List<Map> maps = await dbClient.query('indicator',
         columns: [ID, NAME, TYPE, IDSPACE],
@@ -166,6 +166,49 @@ class DBHelper {
     var dbClient = await db;
     return await dbClient.update('indicator', indicator.toMap(),
         where: '$ID = ?', whereArgs: [indicator.id]);
+  }
+
+  Future<Value> insertValue(Value value) async {
+    print('insertion d\'une valeur en bdd');
+    var dbClient = await db;
+    value.id = await dbClient.insert(
+      'value',
+      value.toMap(),
+    );
+    return value;
+  }
+
+  Future<Value> getValue(int idIndicator) async {
+    //print('recuperation dune value');
+    var dbClient = await db;
+    List<Map> maps = await dbClient.query('value',
+        //columns: [ID, NAME, TYPE, IDSPACE],
+        where: '$IDINDICATOR = ?',
+        whereArgs: [idIndicator]);
+    //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
+    List<Value> value = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        value.add(Value.fromMap(maps[i]));
+      }
+      //print('je return une value §!!!!!!!!!!!!!!!!!!!');
+
+    }
+    //print('je return nul !!!!!!!!!!!!!!!!!!!!!');
+    //return null;
+    return value[0];
+  }
+
+  Future<int> deleteValue(int id) async {
+    print('suppresion d\'un value');
+    var dbClient = await db;
+    return await dbClient.delete('value', where: '$ID = ?', whereArgs: [id]);
+  }
+
+  Future<int> updateValue(Value value) async {
+    var dbClient = await db;
+    return await dbClient.update('value', value.toMap(),
+        where: '$ID = ?', whereArgs: [value.id]);
   }
 
   Future close() async {
