@@ -192,11 +192,10 @@ class DBHelper {
         value.add(Value.fromMap(maps[i]));
       }
       //print('je return une value §!!!!!!!!!!!!!!!!!!!');
-
+      return value[0];
     }
     //print('je return nul !!!!!!!!!!!!!!!!!!!!!');
-    //return null;
-    return value[0];
+    return null;
   }
 
   Future<int> deleteValue(int id) async {

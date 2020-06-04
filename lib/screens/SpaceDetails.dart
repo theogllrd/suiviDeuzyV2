@@ -39,14 +39,12 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   // pour acceder a la bdd
   var dbHelper;
   @override
-  void initState() {
+  Future<void> initState() {
     super.initState();
 
     //values.add({"id": 1, "value": 'Coucou'});
     //values.add({"id": 2, "value": '32'});
     //print(values[1]["value"]);
-
-    List<Indicator> indicators2 = [];
 
     dbHelper = DBHelper();
     //dbHelper.insertValue(new Value(null, 'coucou', 6, 'today'));
@@ -63,9 +61,13 @@ class _SpaceDetailsState extends State<SpaceDetails> {
                         ? values.add({"id": indicator.id, "value": value.value})
                         : print("pas de value pour l'indicateur :" +
                             indicator.name),*/
+                    setState(() {
+                      values.add({
+                        "id": indicator.id.toString(),
+                        "value": value.value
+                      });
+                    })
 
-                    values.add(
-                        {"id": indicator.id.toString(), "value": value.value}),
                     //print(values),
                   })
             }))
@@ -214,7 +216,7 @@ class _SpaceDetailsState extends State<SpaceDetails> {
     values.forEach((value) =>
         value["id"] == idIndicator.toString() ? phrase = value["value"] : null);
 
-    phrase == null ? phrase = "Pas de données aujourd'hui" : null;
+    phrase == "" ? phrase = "Pas de data" : null;
     return phrase;
   }
 
