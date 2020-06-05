@@ -4,6 +4,10 @@ import 'package:suivideuzy/database/Space.dart';
 import 'package:suivideuzy/database/db_helper.dart';
 
 class newSpace extends StatefulWidget {
+  final int userId;
+
+  const newSpace({Key key, this.userId}) : super(key: key);
+
   @override
   _newSpaceState createState() => _newSpaceState();
 }
@@ -11,6 +15,8 @@ class newSpace extends StatefulWidget {
 class _newSpaceState extends State<newSpace> {
   final controllerSpaceName = TextEditingController();
   final controllerIndicatorName = TextEditingController();
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   List<Indicator> _indicators = new List<Indicator>();
 
@@ -29,10 +35,11 @@ class _newSpaceState extends State<newSpace> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text(
-          'Create a new Space',
+          'Création d\'un espace',
         ),
       ),
       body: Center(
@@ -52,17 +59,9 @@ class _newSpaceState extends State<newSpace> {
                     obscureText: false,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Space name',
+                      labelText: 'Nom de l\'espace',
                     ),
                   ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                width: 400,
-                child: Card(
-                  child: showIndicatorsList(),
                 ),
               ),
             ),
@@ -82,7 +81,7 @@ class _newSpaceState extends State<newSpace> {
                         obscureText: false,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
-                          labelText: 'Indicator Name',
+                          labelText: 'Nom de l\'indicateur',
                         ),
                       ),
                     ),
@@ -91,7 +90,7 @@ class _newSpaceState extends State<newSpace> {
                       child: Row(
                         children: <Widget>[
                           Text(
-                            'Indicator type : ',
+                            'Type d\'indicateur : ',
                           ),
                           DropdownButton<String>(
                             value: dropdownValue,
@@ -127,93 +126,40 @@ class _newSpaceState extends State<newSpace> {
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-      /*Column(
-        children: <Widget>[
-          Card(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField(
-                controller: controllerSpaceName,
-                onChanged: (content) {
-                  _spaceName = controllerSpaceName.text;
-                },
-                obscureText: false,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Space name',
+            Expanded(
+              child: Container(
+                width: 400,
+                child: Card(
+                  child: showIndicatorsList(),
                 ),
               ),
             ),
-          ),
-          Card(
-            child: Column(
-              children: <Widget>[
-                showIndicatorsList(),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: controllerIndicatorName,
-                    onChanged: (content) {
-                      _indicatorName = controllerIndicatorName.text;
-                    },
-                    obscureText: false,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Indicator Name',
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        'Indicator type : ',
-                      ),
-                      DropdownButton<String>(
-                        value: dropdownValue,
-                        icon: Icon(Icons.keyboard_arrow_down),
-                        iconSize: 24,
-                        elevation: 16,
-                        style: TextStyle(color: Colors.black),
-                        onChanged: (String newValue) {
-                          setState(() {
-                            dropdownValue = newValue;
-                          });
-                        },
-                        items: <String>['String', 'Integer', 'Boolean', 'Image']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                RaisedButton(
-                  onPressed: _validateIndicator,
-                  child: Text('VALIDER INDICATEUR'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),*/
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_spaceName == null) {
-            return print('le spaceName est null');
+            var snackBar = SnackBar(
+              content: Text(
+                'Le nom de l\'espace est manquant',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.redAccent,
+            );
+            _scaffoldKey.currentState.showSnackBar(snackBar);
           } else {
             print('du coup je save');
-            Space space = Space(null, _spaceName, 1);
+            Space space = Space(null, _spaceName, widget.userId);
             Future<Space> spaceBdd = dbHelper.insertSpace(space);
             spaceBdd.then((onValue) {
-              print('je viens de creer l\'espace id :' + onValue.id.toString());
+              print('je viens de creer l\'espace avec userID :    ' +
+                  widget.userId.toString());
               _indicators.forEach((indicator) => {
                     print('insertion dun indicator'),
                     dbHelper.insertIndicator(Indicator(
@@ -269,18 +215,4 @@ class _newSpaceState extends State<newSpace> {
           (item) => item.name == data.name && item.type == data.type);
     });
   }
-
-/*
-  Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: RaisedButton(
-                        onPressed: _addIndicator,
-                        child: Text('Add indicator'),
-                      ),
-                    ),
-                  ],
-                ),*/
 }

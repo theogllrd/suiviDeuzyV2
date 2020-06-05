@@ -31,13 +31,15 @@ class _HomeState extends State<Home> {
     super.initState();
     dbHelper = DBHelper();
 
-    spaces = dbHelper.getSpaces();
+    spaces = dbHelper.getSpaces(widget.user.id);
     // ici on peut insert tout un tas de trucs dans la bdd
+    print('coucou initstate !!!!!!!!!!!!!!!!!!!! idUser = ' +
+        widget.user.id.toString());
   }
 
   // call au retour de la page newSpace
   void refreshList() {
-    spaces = dbHelper.getSpaces();
+    spaces = dbHelper.getSpaces(widget.user.id);
   }
 
   @override
@@ -45,7 +47,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Welcome back ${widget.user.email}'),
+        title: Text('Bienvenue ${widget.user.email}'),
       ),
       body: _showSpaces(),
       floatingActionButton: FloatingActionButton(
@@ -53,9 +55,9 @@ class _HomeState extends State<Home> {
           print('Create a new space');
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (BuildContext context) {
-              return newSpace();
-            }),
+            MaterialPageRoute(
+              builder: (context) => newSpace(userId: widget.user.id),
+            ),
           ).then((onValue) => refreshList());
         },
         child: Icon(Icons.add_box),
@@ -79,23 +81,33 @@ class _HomeState extends State<Home> {
             );
           }
           if (snapshot.data == null || snapshot.data.length == 0) {
-            return Text('No data found');
+            return Text('Pas d\'espaces existants');
           }
           return CircularProgressIndicator();
         });
   }
 
   Widget _space(Space space) {
-    return ListTile(
-      title: Text(space != null ? space.name : 'Error loading the title'),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SpaceDetails(currentSpace: space),
-          ),
-        );
-      },
+    return Container(
+      margin: const EdgeInsets.all(2.0),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.blue,
+        ),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: ListTile(
+        title:
+            Text(space != null ? space.name : 'Erreur sur la lecteur du titre'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SpaceDetails(currentSpace: space),
+            ),
+          );
+        },
+      ),
     );
   }
 }

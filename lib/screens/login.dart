@@ -29,7 +29,7 @@ class _LoginState extends State<Login> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Please login'),
+        title: Text('Veuillez vous identifier'),
       ),
       body: Card(
         child: Padding(
@@ -41,13 +41,13 @@ class _LoginState extends State<Login> {
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Identifiant',
                   ),
                   onSaved: (input) => _email = input,
                 ),
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Mot de passe',
                   ),
                   onSaved: (input) => _password = input,
                   obscureText: true,
@@ -59,19 +59,14 @@ class _LoginState extends State<Login> {
                       padding: EdgeInsets.all(8.0),
                       child: RaisedButton(
                         onPressed: _signIn,
-                        child: Text('Sign in'),
+                        child: Text('Inscription'),
                       ),
                     ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: RaisedButton(
                         onPressed: _submitLogin,
-                        child: Text('Log in'),
+                        child: Text('Connexion'),
                       ),
                     ),
                   ],
@@ -106,7 +101,7 @@ class _LoginState extends State<Login> {
       if (exist == true) {
         var snackBar = SnackBar(
           content: Text(
-            'User already exist',
+            'Utilisateur déjà existant',
             style: TextStyle(
               fontSize: 20,
             ),
@@ -124,7 +119,7 @@ class _LoginState extends State<Login> {
         await dbHelper.insert('user', u);
         var snackBar = SnackBar(
           content: Text(
-            'Added',
+            'Bienvenue',
             style: TextStyle(
               fontSize: 20,
             ),
@@ -163,7 +158,7 @@ class _LoginState extends State<Login> {
       if (found == false) {
         var snackBar = SnackBar(
           content: Text(
-            'Wrong user / password',
+            'Mauvais utilisateur/mot de passe',
             style: TextStyle(
               fontSize: 20,
             ),

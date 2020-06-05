@@ -102,10 +102,15 @@ class DBHelper {
     return space;
   }
 
-  Future<List<Space>> getSpaces() async {
+  Future<List<Space>> getSpaces(int userId) async {
     //print('recuperation de la liste des espaces');
     var dbClient = await db;
-    List<Map> maps = await dbClient.query('space', columns: [ID, NAME, IDUSER]);
+    List<Map> maps = await dbClient.query(
+      'space',
+      columns: [ID, NAME, IDUSER],
+      where: '$IDUSER = ?',
+      whereArgs: [userId],
+    );
     //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
     List<Space> spaces = [];
     if (maps.length > 0) {
@@ -133,7 +138,6 @@ class DBHelper {
   }
 
   Future<List<Indicator>> getIndicators(int idSpace) async {
-    //print('recuperation de la liste des indicators');
     var dbClient = await db;
     List<Map> maps = await dbClient.query('indicator',
         columns: [ID, NAME, TYPE, IDSPACE],
@@ -169,7 +173,7 @@ class DBHelper {
   }
 
   Future<Value> insertValue(Value value) async {
-    print('insertion d\'une valeur en bdd');
+    print('insertion d\'une valeur en bdd   ' + value.createdDate);
     var dbClient = await db;
     value.id = await dbClient.insert(
       'value',
@@ -178,13 +182,14 @@ class DBHelper {
     return value;
   }
 
-  Future<Value> getValue(int idIndicator) async {
+  Future<Value> getValue(int idIndicator, String date) async {
+    print('en bdd jai reuc la date ' + date);
     //print('recuperation dune value');
     var dbClient = await db;
     List<Map> maps = await dbClient.query('value',
         //columns: [ID, NAME, TYPE, IDSPACE],
-        where: '$IDINDICATOR = ?',
-        whereArgs: [idIndicator]);
+        where: '$IDINDICATOR = ? AND $CREATEDDATE = ?',
+        whereArgs: [idIndicator, date]);
     //List<Map> maps = await dbClient.rawQuery("SELECT * FROM $TABLE");
     List<Value> value = [];
     if (maps.length > 0) {
@@ -205,6 +210,7 @@ class DBHelper {
   }
 
   Future<int> updateValue(Value value) async {
+    print('update de value en bdd    ' + value.createdDate);
     var dbClient = await db;
     return await dbClient.update('value', value.toMap(),
         where: '$ID = ?', whereArgs: [value.id]);

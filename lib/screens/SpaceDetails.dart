@@ -10,6 +10,8 @@ import 'package:suivideuzy/screens/editIndicator.dart';
 import 'package:suivideuzy/screens/home.dart';
 import 'package:suivideuzy/database/StructValues.dart';
 
+import 'package:intl/intl.dart';
+
 class SpaceDetails extends StatefulWidget {
   // pour recuperer le space courant depuis le home
   final Space currentSpace;
@@ -27,7 +29,14 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   final controllerSpaceName = TextEditingController();
   String _spaceName;
 
-  DateTime _dateTime = DateTime.now();
+  DateTime _dateTime = new DateTime.now();
+  String formatedDate = new DateFormat.yMd().format(new DateTime.now());
+
+  /*String _stringDateTime = _dateTime.
+  new DateFormat.yMd().format(new DateTime.now());
+  formatDate()
+  new DateTime.now();*/
+
   bool editMode = false;
 
   //final List<Indicator> _indicators = new List<Indicator>.generate(
@@ -42,10 +51,6 @@ class _SpaceDetailsState extends State<SpaceDetails> {
   Future<void> initState() {
     super.initState();
 
-    //values.add({"id": 1, "value": 'Coucou'});
-    //values.add({"id": 2, "value": '32'});
-    //print(values[1]["value"]);
-
     dbHelper = DBHelper();
     //dbHelper.insertValue(new Value(null, 'coucou', 6, 'today'));
     //dbHelper.insertValue(new Value(null, '92', 7, 'today'));
@@ -54,31 +59,41 @@ class _SpaceDetailsState extends State<SpaceDetails> {
     dbHelper
         .getIndicators(widget.currentSpace.id)
         .then((indicators) => indicators.forEach((indicator) => {
-              //print('id === ' + indicator.id.toString()),
-              //indicators2.add(indicator),
-              dbHelper.getValue(indicator.id).then((value) => {
-                    /*value != null
-                        ? values.add({"id": indicator.id, "value": value.value})
-                        : print("pas de value pour l'indicateur :" +
-                            indicator.name),*/
+              dbHelper.getValue(indicator.id, formatedDate).then((value) => {
                     setState(() {
                       values.add({
-                        "id": indicator.id.toString(),
-                        "value": value.value
+                        "idIndicator": indicator.id.toString(),
+                        "value": value.value,
+                        "id": value.id,
                       });
                     })
-
-                    //print(values),
                   })
             }))
         .then(refreshList());
-    //.then(print(values));
-    // ici on peut insert tout un tas de trucs dans la bdd
+
+    //print(_dateTime);
+    //print(formatedDate);
   }
 
   void refreshList() {
+    print('-----------------------------------');
+    print('Get les values pour la date : ' + formatedDate);
+    print('-----------------------------------');
     setState(() {
       indicators = dbHelper.getIndicators(widget.currentSpace.id);
+      dbHelper
+          .getIndicators(widget.currentSpace.id)
+          .then((indicators) => indicators.forEach((indicator) => {
+                dbHelper.getValue(indicator.id, formatedDate).then((value) => {
+                      setState(() {
+                        values.add({
+                          "idIndicator": indicator.id.toString(),
+                          "value": value.value,
+                          "id": value.id,
+                        });
+                      })
+                    })
+              }));
     });
   }
 
@@ -117,8 +132,10 @@ class _SpaceDetailsState extends State<SpaceDetails> {
                     ).then((date) {
                       setState(() {
                         _dateTime = date;
+                        formatedDate = new DateFormat.yMd().format(date);
+                        values.clear();
                       });
-                    });
+                    }).then((onValue) => refreshList());
                   },
                 )
               : IconButton(
@@ -142,7 +159,6 @@ class _SpaceDetailsState extends State<SpaceDetails> {
                 }
               : dbHelper.updateSpace(Space(widget.currentSpace.id,
                   widget.currentSpace.name, widget.currentSpace.idUser));
-          //widget.currentSpace.name = controllerSpaceName.text;
         },
         child: Icon(editMode ? Icons.check : Icons.edit),
         backgroundColor: editMode ? Colors.green : Colors.blueAccent,
@@ -164,17 +180,18 @@ class _SpaceDetailsState extends State<SpaceDetails> {
             );
           }
           if (snapshot.data == null || snapshot.data.length == 0) {
-            return Text('No data found');
+            return Text('Pas de données');
           }
           return CircularProgressIndicator();
         });
   }
 
   Widget _indicator(Indicator indicator) {
+    String dataValue = showValueForIndicator(indicator.id).toString();
+    int dataId = getValueId(indicator.id);
+
     return ListTile(
-      title: Text(indicator.name +
-          '     |     ' +
-          showValueForIndicator(indicator.id).toString()),
+      title: Text(indicator.name + ' | ' + dataValue),
       trailing: editMode
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -204,20 +221,34 @@ class _SpaceDetailsState extends State<SpaceDetails> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => editIndicator(currentIndicator: indicator),
+            builder: (context) => editIndicator(
+              currentIndicator: indicator,
+              currentValue: dataValue,
+              idValue: dataId,
+              valueDate: formatedDate,
+            ),
           ),
-        );
+        ).then((onValue) => refreshList());
       },
     );
   }
 
   showValueForIndicator(int idIndicator) {
     String phrase = "";
-    values.forEach((value) =>
-        value["id"] == idIndicator.toString() ? phrase = value["value"] : null);
+    values.forEach((value) => value["idIndicator"] == idIndicator.toString()
+        ? phrase = value["value"]
+        : null);
 
-    phrase == "" ? phrase = "Pas de data" : null;
+    phrase == "" ? phrase = " ... Pas de données aujourd'hui ... " : null;
     return phrase;
+  }
+
+  getValueId(int idIndicator) {
+    int id;
+    values.forEach((value) => value["idIndicator"] == idIndicator.toString()
+        ? id = value["id"]
+        : null);
+    return id;
   }
 
   _deleteIndicator(Indicator data) {
@@ -229,8 +260,8 @@ class _SpaceDetailsState extends State<SpaceDetails> {
     return showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: Text('Delete Space'),
-              content: Text('Are you sure ?'),
+              title: Text('Supprimer l\'espace'),
+              content: Text('Etes-vous sur ?'),
               actions: <Widget>[
                 FlatButton(
                     onPressed: () => {
@@ -238,9 +269,9 @@ class _SpaceDetailsState extends State<SpaceDetails> {
                           Navigator.pop(context), // to close the popup
                           Navigator.pop(context), // to get back to Home()
                         },
-                    child: Text('YES')),
+                    child: Text('OUI')),
                 FlatButton(
-                    onPressed: () => Navigator.pop(context), child: Text('NO'))
+                    onPressed: () => Navigator.pop(context), child: Text('NON'))
               ],
             ));
   }
