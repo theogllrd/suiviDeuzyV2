@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:suivideuzy/database/Indicator.dart';
 import 'package:suivideuzy/database/Value.dart';
 import 'package:suivideuzy/database/db_helper.dart';
+import 'package:suivideuzy/screens/lineGraph.dart';
 
 class editIndicator extends StatefulWidget {
   final Indicator currentIndicator;
@@ -32,6 +33,14 @@ class _editIndicatorState extends State<editIndicator> {
 
   String dataValue;
   bool isValueChanged = false;
+
+  bool chart = true;
+  final dataTEST = [
+    new TimeSeriesSales(new DateTime(2020, 6, 2), 2),
+    new TimeSeriesSales(new DateTime(2020, 6, 3), 3),
+    new TimeSeriesSales(new DateTime(2020, 6, 4), 1),
+    new TimeSeriesSales(new DateTime(2020, 6, 5), 3),
+  ];
 
   // pour acceder a la bdd
   var dbHelper;
@@ -103,6 +112,18 @@ class _editIndicatorState extends State<editIndicator> {
                   labelText: widget.currentValue,
                 ),
               ),
+              Container(
+                  child:
+                      chart == true && widget.currentIndicator.type == 'Integer'
+                          ? Expanded(
+                              flex: 5,
+                              child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: SimpleTimeSeriesChart.withSampleData(
+                                      dataTEST)))
+                          : Container(
+                              padding: EdgeInsets.symmetric(horizontal: 30.0),
+                              child: Text("Pas de graphique à afficher"))),
             ],
           )),
       floatingActionButton: FloatingActionButton(
